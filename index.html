@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Fridge Friend</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-wrapper">
+        <!-- 🥕 Suggested ingredients -->
+        <div class="suggested-ingredients">
+          <button type="button" class="ingredient-btn">Eggs</button>
+          <button type="button" class="ingredient-btn">Tomato</button>
+          <button type="button" class="ingredient-btn">Rice</button>
+          <button type="button" class="ingredient-btn">Onion</button>
+          <button type="button" class="ingredient-btn">Garlic</button>
+          <button type="button" class="ingredient-btn">Cheese</button>
+          <button type="button" class="ingredient-btn">Bread</button>
+          <button type="button" class="ingredient-btn">Milk</button>
+          <button type="button" class="ingredient-btn">Butter</button>
+          <button type="button" class="ingredient-btn">Potato</button>
+          <button type="button" class="ingredient-btn">Chicken</button>
+          <button type="button" class="ingredient-btn">Tofu</button>
+          <button type="button" class="ingredient-btn">Ground Beef</button>
+          <button type="button" class="ingredient-btn">Eggplant</button>
+          <button type="button" class="ingredient-btn">Soy Sauce</button>
+          <button type="button" class="ingredient-btn">Basil</button>
+          <button type="button" class="ingredient-btn">Oregano</button>
+          <button type="button" class="ingredient-btn">Mushroom</button>
+        </div>
+
+        <!-- 📜 The form -->
+        <form id="ingredient-form">
+          <input
+            type="text"
+            id="ingredient-input"
+            placeholder="Type other ingredients..."
+          />
+          <input type="submit" id="submit-button" value="Search Recipes" />
+        </form>
+
+        <!-- 🍽️ Recipe results -->
+        <div id="recipe-results"></div>
+
+        <!-- ©️ The footer -->
+        <footer>
+          <p>
+            &copy; 2025
+            <a
+              href="https://selective-raft-f01.notion.site/1b1b9736465580578a5bf5be4d4418d4?source=copy_link"
+              target="_blank"
+              rel="noopener"
+              ><strong>Cindy Mikoda</strong></a
+            >
+            —
+            <a
+              href="https://github.com/cindymikoda/Fridge-Friend"
+              target="_blank"
+              rel="noopener"
+              >GitHub Repository</a
+            >
+            |
+            <a
+              href="https://fridge-friend-iota.vercel.app"
+              target="_blank"
+              rel="noopener"
+              >Live on Vercel</a
+            >
+          </p>
+        </footer>
+      </div>
+    </div>
+  </body>
+  <script src="src/script.js"></script>
+</html>
