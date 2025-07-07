@@ -3,6 +3,7 @@ const ingredientButtons = document.querySelectorAll(".ingredient-btn");
 const ingredientInput = document.querySelector("#ingredient-input");
 const recipeResults = document.querySelector("#recipe-results");
 const form = document.querySelector("#ingredient-form");
+const submitButton = document.querySelector("#submit-button"); // Assuming the submit button has this ID
 
 ingredientButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -52,22 +53,51 @@ form.addEventListener("submit", function (event) {
   )}&context=${encodeURIComponent(context)}&key=${apiKey}`;
 
   recipeResults.innerHTML = "Loading recipe...";
+  recipeResults.classList.remove("hidden"); // Show results
+  submitButton.disabled = true;
 
   fetch(apiUrl)
     .then((res) => res.json())
     .then((data) => {
       const rawText = data.answer;
       const formatted = rawText
-        .replace(/^Title:\s*(.+)$/m, "<h2>$1</h2>") // Add this line for the title
-        .replace(/(Ingredients:)/gi, "<strong>$1</strong><br>")
-        .replace(/(How to make it:)/gi, "<br><strong>$1</strong><br><br>")
+        .replace(/^Title:\s*(.+)$/m, '<h2 class="recipe-title">$1</h2>')
+        .replace(
+          /(Ingredients:)/gi,
+          '<strong class="recipe-section">$1</strong><br>'
+        )
+        .replace(
+          /(How to make it:|Instructions:)/gi,
+          '<br><strong class="recipe-section">$1</strong><br><br>'
+        )
         .replace(/^- /gm, "• ")
-        .replace(/\n/g, "<br>");
+        .replace(/\n/g, "<br>")
+        .replace(/Ingredients:<br>((?:• .+<br>)+)/, function (match, items) {
+          const listItems = items
+            .split("<br>")
+            .filter((line) => line.startsWith("• "))
+            .map((line) => `<li>${line.replace("• ", "")}</li>`)
+            .join("");
+          return (
+            '<strong class="recipe-section">Ingredients:</strong><ul>' +
+            listItems +
+            "</ul>"
+          );
+        });
 
-      recipeResults.innerHTML = formatted;
+      recipeResults.innerHTML = "";
+      recipeResults.classList.remove("hidden"); // Ensure visible
+      new Typewriter(recipeResults, {
+        strings: formatted,
+        autoStart: true,
+        delay: 15,
+      });
+      submitButton.disabled = false; // Re-enable button
     })
     .catch((error) => {
       recipeResults.innerHTML = "Sorry, something went wrong.";
+      recipeResults.classList.remove("hidden"); // Show error
       console.error("Error fetching recipe:", error);
+      submitButton.disabled = false;
     });
 });
