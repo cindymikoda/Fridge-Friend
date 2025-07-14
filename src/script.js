@@ -3,8 +3,9 @@ const ingredientButtons = document.querySelectorAll(".ingredient-btn");
 const ingredientInput = document.querySelector("#ingredient-input");
 const recipeResults = document.querySelector("#recipe-results");
 const form = document.querySelector("#ingredient-form");
-const submitButton = document.querySelector("#submit-button"); // Assuming the submit button has this ID
+const submitButton = document.querySelector("#submit-button");
 
+// 🥕 Handle ingredient button clicks (select/deselect)
 ingredientButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const ingredient = button.textContent;
@@ -18,15 +19,18 @@ ingredientButtons.forEach((button) => {
   });
 });
 
+// 📜 Handle form submission and recipe generation
 form.addEventListener("submit", function (event) {
   event.preventDefault();
 
+  // 📝 Gather all selected and typed ingredients
   const typedInput = ingredientInput.value.trim();
   const allIngredients = [...selectedIngredients];
   if (typedInput) {
     allIngredients.push(typedInput);
   }
 
+  // 🧑‍🍳 Prepare prompt and context for the API
   const prompt = `I have the following ingredients: ${allIngredients.join(
     ", "
   )}. What can I cook with them? Give me one complete recipe with measurements.`;
@@ -47,18 +51,22 @@ form.addEventListener("submit", function (event) {
     Do not use any other ingredients. Do not include any HTML. Use plain text with clear line breaks.
   `;
 
+  // 🔑 API setup
   const apiKey = "0bc42td8e0fe17b0ed58c2f95745oca3";
   const apiUrl = `https://api.shecodes.io/ai/v1/generate?prompt=${encodeURIComponent(
     prompt
   )}&context=${encodeURIComponent(context)}&key=${apiKey}`;
 
+  // ⏳ Show loading state
   recipeResults.innerHTML = "Loading recipe...";
-  recipeResults.classList.remove("hidden"); // Show results
+  recipeResults.classList.remove("hidden");
   submitButton.disabled = true;
 
+  // 🌐 Fetch recipe from API
   fetch(apiUrl)
     .then((res) => res.json())
     .then((data) => {
+      // 📦 Format the API response for display
       const rawText = data.answer;
       const formatted = rawText
         .replace(/^Title:\s*(.+)$/m, '<h2 class="recipe-title">$1</h2>')
@@ -72,6 +80,7 @@ form.addEventListener("submit", function (event) {
         )
         .replace(/^- /gm, "• ")
         .replace(/\n/g, "<br>")
+        // 🍽️ Convert ingredients to a list
         .replace(/Ingredients:<br>((?:• .+<br>)+)/, function (match, items) {
           const listItems = items
             .split("<br>")
@@ -85,8 +94,9 @@ form.addEventListener("submit", function (event) {
           );
         });
 
+      // 🖊️ Animate the recipe output with Typewriter effect
       recipeResults.innerHTML = "";
-      recipeResults.classList.remove("hidden"); // Ensure visible
+      recipeResults.classList.remove("hidden");
       new Typewriter(recipeResults, {
         strings: formatted,
         autoStart: true,
@@ -94,10 +104,14 @@ form.addEventListener("submit", function (event) {
       });
       submitButton.disabled = false; // Re-enable button
     })
+    // ⚠️ Handle errors
     .catch((error) => {
       recipeResults.innerHTML = "Sorry, something went wrong.";
-      recipeResults.classList.remove("hidden"); // Show error
+      recipeResults.classList.remove("hidden");
       console.error("Error fetching recipe:", error);
       submitButton.disabled = false;
     });
 });
+
+// I am still learning and I feel I need to put a comment in every line of code to understand it better.
+// I hope excessive comments are not a problem. ✨
