@@ -9,25 +9,84 @@ const submitButton = document.querySelector("#submit-button");
 ingredientButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const ingredient = button.textContent;
-    if (selectedIngredients.includes(ingredient)) {
-      selectedIngredients.splice(selectedIngredients.indexOf(ingredient), 1);
+    const ingredientIndex = selectedIngredients.findIndex(
+      (item) => item === ingredient
+    );
+
+    if (ingredientIndex !== -1) {
+      // Remove ingredient using filter for better performance
+      selectedIngredients.splice(ingredientIndex, 1);
       button.classList.remove("selected");
+      button.setAttribute("aria-pressed", "false");
     } else {
       selectedIngredients.push(ingredient);
       button.classList.add("selected");
+      button.setAttribute("aria-pressed", "true");
+    }
+
+    // Update submit button state
+    updateSubmitButtonState();
+  });
+});
+
+// 🎹 Add keyboard navigation support for ingredient buttons
+ingredientButtons.forEach((button) => {
+  // Make buttons focusable and add keyboard support
+  button.setAttribute("tabindex", "0");
+  button.setAttribute("role", "button");
+  button.setAttribute("aria-pressed", "false");
+
+  button.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      button.click();
     }
   });
+});
+
+// 🔄 Update submit button state based on selected ingredients
+function updateSubmitButtonState() {
+  const hasIngredients =
+    selectedIngredients.length > 0 || ingredientInput.value.trim();
+  submitButton.disabled = !hasIngredients;
+}
+
+// 📝 Add input validation and real-time feedback
+ingredientInput.addEventListener("input", () => {
+  updateSubmitButtonState();
+
+  // Clear any previous error states
+  ingredientInput.classList.remove("error");
 });
 
 // 📜 Handle form submission and recipe generation
 form.addEventListener("submit", function (event) {
   event.preventDefault();
 
-  // 📝 Gather all selected and typed ingredients
+  // 📝 Gather all selected and typed ingredients with validation
   const typedInput = ingredientInput.value.trim();
   const allIngredients = [...selectedIngredients];
+
+  // Input validation
   if (typedInput) {
-    allIngredients.push(typedInput);
+    // Basic validation: no empty strings, reasonable length
+    if (typedInput.length > 100) {
+      showError("Please keep ingredient names under 100 characters.");
+      return;
+    }
+
+    // Split by commas and clean up
+    const typedIngredients = typedInput
+      .split(",")
+      .map((ingredient) => ingredient.trim())
+      .filter((ingredient) => ingredient);
+    allIngredients.push(...typedIngredients);
+  }
+
+  // Check if we have any ingredients at all
+  if (allIngredients.length === 0) {
+    showError("Please select or type at least one ingredient.");
+    return;
   }
 
   // 🧑‍🍳 Prepare prompt and context for the API
@@ -57,60 +116,141 @@ form.addEventListener("submit", function (event) {
     prompt
   )}&context=${encodeURIComponent(context)}&key=${apiKey}`;
 
-  // ⏳ Show loading state
-  recipeResults.innerHTML = "Loading recipe...";
-  recipeResults.classList.remove("hidden");
-  submitButton.disabled = true;
+  // ⏳ Show loading state with better UX
+  showLoadingState();
 
-  // 🌐 Fetch recipe from API
+  // 🌐 Fetch recipe from API with improved error handling
   fetch(apiUrl)
-    .then((res) => res.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
     .then((data) => {
+      // Check if API returned valid data
+      if (!data || !data.answer) {
+        throw new Error("Invalid response from recipe service");
+      }
+
       // 📦 Format the API response for display
       const rawText = data.answer;
-      const formatted = rawText
-        .replace(/^Title:\s*(.+)$/m, '<h2 class="recipe-title">$1</h2>')
-        .replace(
-          /(Ingredients:)/gi,
-          '<strong class="recipe-section">$1</strong><br>'
-        )
-        .replace(
-          /(How to make it:|Instructions:)/gi,
-          '<br><strong class="recipe-section">$1</strong><br><br>'
-        )
-        .replace(/^- /gm, "• ")
-        .replace(/\n/g, "<br>")
-        // 🍽️ Convert ingredients to a list
-        .replace(/Ingredients:<br>((?:• .+<br>)+)/, function (match, items) {
-          const listItems = items
-            .split("<br>")
-            .filter((line) => line.startsWith("• "))
-            .map((line) => `<li>${line.replace("• ", "")}</li>`)
-            .join("");
-          return (
-            '<strong class="recipe-section">Ingredients:</strong><ul>' +
-            listItems +
-            "</ul>"
-          );
-        });
+      const formatted = formatRecipeText(rawText);
 
       // 🖊️ Animate the recipe output with Typewriter effect
-      recipeResults.innerHTML = "";
-      recipeResults.classList.remove("hidden");
-      new Typewriter(recipeResults, {
-        strings: formatted,
-        autoStart: true,
-        delay: 15,
-      });
-      submitButton.disabled = false; // Re-enable button
+      showRecipeResults(formatted);
     })
-    // ⚠️ Handle errors
+    // ⚠️ Handle different types of errors with specific messages
     .catch((error) => {
-      recipeResults.innerHTML = "Sorry, something went wrong.";
-      recipeResults.classList.remove("hidden");
       console.error("Error fetching recipe:", error);
+
+      let errorMessage = "Sorry, something went wrong. Please try again.";
+
+      if (error.message.includes("HTTP error")) {
+        errorMessage =
+          "Unable to connect to the recipe service. Please check your internet connection and try again.";
+      } else if (error.message.includes("Invalid response")) {
+        errorMessage =
+          "The recipe service returned an unexpected response. Please try again.";
+      } else if (error.name === "TypeError") {
+        errorMessage = "Network error. Please check your internet connection.";
+      }
+
+      showError(errorMessage);
+    })
+    .finally(() => {
+      // Always re-enable the button
       submitButton.disabled = false;
     });
+});
+
+// 🎨 Helper function to show loading state
+function showLoadingState() {
+  recipeResults.innerHTML = `
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Finding the perfect recipe for you...</p>
+    </div>
+  `;
+  recipeResults.classList.remove("hidden");
+  submitButton.disabled = true;
+}
+
+// 🎨 Helper function to show error messages
+function showError(message) {
+  recipeResults.innerHTML = `
+    <div class="error-container">
+      <p class="error-message">${message}</p>
+      <button type="button" class="retry-button" onclick="location.reload()">Try Again</button>
+    </div>
+  `;
+  recipeResults.classList.remove("hidden");
+  submitButton.disabled = false;
+}
+
+// 🎨 Helper function to format recipe text
+function formatRecipeText(rawText) {
+  return (
+    rawText
+      .replace(/^Title:\s*(.+)$/m, '<h2 class="recipe-title">$1</h2>')
+      .replace(
+        /(Ingredients:)/gi,
+        '<strong class="recipe-section">$1</strong><br>'
+      )
+      .replace(
+        /(How to make it:|Instructions:)/gi,
+        '<br><strong class="recipe-section">$1</strong><br><br>'
+      )
+      .replace(/^- /gm, "• ")
+      .replace(/\n/g, "<br>")
+      // 🍽️ Convert ingredients to a list
+      .replace(/Ingredients:<br>((?:• .+<br>)+)/, function (match, items) {
+        const listItems = items
+          .split("<br>")
+          .filter((line) => line.startsWith("• "))
+          .map((line) => `<li>${line.replace("• ", "")}</li>`)
+          .join("");
+        return (
+          '<strong class="recipe-section">Ingredients:</strong><ul>' +
+          listItems +
+          "</ul>"
+        );
+      })
+  );
+}
+
+// 🎨 Helper function to show recipe results
+function showRecipeResults(formattedText) {
+  recipeResults.innerHTML = "";
+  recipeResults.classList.remove("hidden");
+
+  new Typewriter(recipeResults, {
+    strings: formattedText,
+    autoStart: true,
+    delay: 15,
+  });
+}
+
+// 🚀 Initialize the app
+document.addEventListener("DOMContentLoaded", () => {
+  // Set initial button state
+  updateSubmitButtonState();
+
+  // Add aria labels for better accessibility
+  ingredientInput.setAttribute("aria-label", "Type additional ingredients");
+  submitButton.setAttribute(
+    "aria-label",
+    "Search for recipes with selected ingredients"
+  );
+
+  // Add focus management
+  ingredientInput.addEventListener("focus", () => {
+    ingredientInput.classList.add("focused");
+  });
+
+  ingredientInput.addEventListener("blur", () => {
+    ingredientInput.classList.remove("focused");
+  });
 });
 
 // I am still learning and I feel I need to put a comment in every line of code to understand it better.
