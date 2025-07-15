@@ -88,6 +88,86 @@ body {
   background: #a8e6a1;
 }
 
+/* 🍽️ Dietary restrictions section */
+.dietary-section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f9f9fc;
+  border-radius: 12px;
+  border: 1px solid #e8e8f0;
+}
+
+.dietary-heading {
+  font-size: 1.1em;
+  color: #5e4b8b;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+  text-align: center;
+}
+
+.dietary-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* 🍽️ Dietary restriction buttons */
+.dietary-btn {
+  padding: 6px 12px;
+  border: 1.5px solid #d4d4d8;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #6b7280;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dietary-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.dietary-btn:focus {
+  outline: 2px solid #5e4b8b;
+  outline-offset: 2px;
+}
+
+.dietary-btn.selected {
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1e40af;
+  transform: translateY(-1px);
+}
+
+.dietary-btn.selected:hover {
+  background: #bfdbfe;
+}
+
+/* 🍽️ Dietary badges in recipe results */
+.dietary-badge {
+  margin-bottom: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+  border: 1px solid #93c5fd;
+}
+
 /* 📝 Ingredient form styles */
 #ingredient-form {
   display: flex;
@@ -198,7 +278,7 @@ body {
   margin-bottom: 4px;
 }
 
-/* ⏳ Loading state styles*/
+/* ⏳ Loading state styles */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -231,7 +311,7 @@ body {
   margin: 0;
 }
 
-/* ⚠️ Error state styles*/
+/* ⚠️ Error state styles */
 .error-container {
   text-align: center;
   padding: 20px;
@@ -298,7 +378,7 @@ input:focus {
   outline-offset: 2px;
 }
 
-/* 📱 Responsive styles for mobile*/
+/* 📱 Responsive styles for mobile */
 @media (max-width: 600px) {
   .container {
     max-width: 98vw;
@@ -307,63 +387,32 @@ input:focus {
     margin: 0;
     min-height: 100vh;
   }
-
-  .form-wrapper {
-    padding: 0;
-    margin-bottom: 12px;
-  }
-
-  #recipe-results {
-    padding: 12px 4vw;
-    font-size: 1em;
-  }
-
-  .heading {
-    font-size: 1.3em;
-  }
-
-  .suggested-ingredients {
-    gap: 6px;
-  }
-
-  .ingredient-btn {
-    font-size: 0.95em;
-    padding: 7px 10px;
-  }
-
-  .loading-spinner {
-    width: 30px;
-    height: 30px;
-  }
-
-  .error-message {
-    font-size: 0.9em;
-  }
 }
 
-/* 🌟 Animations for better UX */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.form-wrapper {
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.dietary-section {
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.dietary-heading {
+  font-size: 1em;
+}
+
+.dietary-filters {
+  gap: 6px;
+}
+
+.dietary-btn {
+  font-size: 0.85em;
+  padding: 5px 10px;
 }
 
 #recipe-results {
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* 🎨 High contrast mode support */
-@media (prefers-contrast: high) {
-  .ingredient-btn {
-    border-width: 2px;
-  }
-
-  .ingredient-btn.selected {
-    border-width: 3px;
-  }
+  padding: 12px 4vw;
+  font-size: 1em;
 }
